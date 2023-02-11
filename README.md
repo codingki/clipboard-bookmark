@@ -2,7 +2,7 @@
 
 A Raycast extension to bookmark your clipboard
 
-![Clipboard Bookmark](./thumbnail.png)
+![Clipboard Bookmark](./demo.gif)
 
 Commands:
 
