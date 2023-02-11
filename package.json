@@ -21,7 +21,7 @@
       "mode": "view"
     },
     {
-      "name": "add-bookmark",
+      "name": "add-clipboard-bookmark",
       "title": "Paste and Bookmark",
       "description": "Paste and bookmark your current clipboard",
       "mode": "no-view"
