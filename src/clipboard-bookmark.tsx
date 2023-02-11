@@ -17,16 +17,21 @@ interface Value {
   value: string;
 }
 
-type Items = [string, Value][];
+interface Item extends Value {
+  number: string;
+}
+
+type Items = [string, Item][];
 
 export default function Command() {
   const [searchText, setSearchText] = useState("");
   const [items, setItems] = useState<Items>();
 
   const bookmarkList = items?.filter(
-    ([_, value]) =>
-      value.value.toLowerCase().includes(searchText.toLowerCase()) ||
-      value.title.toLowerCase().includes(searchText.toLowerCase())
+    ([_, v]) =>
+      v.value.toLowerCase().includes(searchText.toLowerCase()) ||
+      v.title.toLowerCase().includes(searchText.toLowerCase()) ||
+      searchText === v.number
   );
 
   async function fetchStorage() {
@@ -34,9 +39,9 @@ export default function Command() {
       const res = await LocalStorage.allItems();
       const allItems = Object.entries(res);
       const finalRes: Items = [];
-      allItems.forEach(([key, value]) => {
+      allItems.forEach(([key, value], i) => {
         const parsedValue: Value = JSON.parse(value);
-        finalRes.push([key, parsedValue]);
+        finalRes.push([key, { number: String(i + 1), ...parsedValue }]);
       });
       setItems(finalRes);
     } catch (e) {
@@ -146,6 +151,7 @@ export default function Command() {
         bookmarkList.map(([key, v]) => (
           <List.Item
             key={key}
+            subtitle={v.number}
             title={v.title}
             actions={
               <ActionPanel>
