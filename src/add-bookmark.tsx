@@ -3,11 +3,17 @@ import { v4 as uuidv4 } from "uuid";
 
 export default async function AddBookmark() {
   const { text } = await Clipboard.read();
-  if (!text) {
+  if (!text || text.trim() === "") {
     await showHUD("Text clipboard is empty");
   } else {
     try {
-      await LocalStorage.setItem(uuidv4(), text);
+      await LocalStorage.setItem(
+        uuidv4(),
+        JSON.stringify({
+          title: text,
+          text,
+        })
+      );
       await showHUD("Added to bookmarks");
       await closeMainWindow({ popToRootType: PopToRootType.Suspended });
     } catch (e) {

@@ -12,17 +12,33 @@ import {
 } from "@raycast/api";
 import { v4 as uuidv4 } from "uuid";
 
+interface Value {
+  title: string;
+  value: string;
+}
+
+type Items = [string, Value][];
+
 export default function Command() {
   const [searchText, setSearchText] = useState("");
-  const [items, setItems] = useState<[string, string][]>();
+  const [items, setItems] = useState<Items>();
 
-  const bookmarkList = items?.filter(([_, value]) => value.toLowerCase().includes(searchText.toLowerCase()));
+  const bookmarkList = items?.filter(
+    ([_, value]) =>
+      value.value.toLowerCase().includes(searchText.toLowerCase()) ||
+      value.title.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   async function fetchStorage() {
     try {
-      const res = await LocalStorage.allItems<Record<string, string>>();
+      const res = await LocalStorage.allItems();
       const allItems = Object.entries(res);
-      setItems(allItems);
+      const finalRes: Items = [];
+      allItems.forEach(([key, value]) => {
+        const parsedValue: Value = JSON.parse(value);
+        finalRes.push([key, parsedValue]);
+      });
+      setItems(finalRes);
     } catch (e) {
       const error = e as Error;
       await showToast({
@@ -35,7 +51,13 @@ export default function Command() {
 
   async function addBookmark(value: string) {
     try {
-      await LocalStorage.setItem(uuidv4(), value);
+      await LocalStorage.setItem(
+        uuidv4(),
+        JSON.stringify({
+          title: value,
+          value,
+        })
+      );
       await showToast({
         style: Toast.Style.Success,
         title: "Added to bookmarks",
@@ -121,13 +143,13 @@ export default function Command() {
         />
       ) : (
         bookmarkList &&
-        bookmarkList.map(([key, value]) => (
+        bookmarkList.map(([key, v]) => (
           <List.Item
             key={key}
-            title={value}
+            title={v.title}
             actions={
               <ActionPanel>
-                <Action.CopyToClipboard title="Copy to clipboard" content={value} />
+                <Action.CopyToClipboard title="Copy to clipboard" content={v.value} />
                 <Action
                   title="Remove"
                   onAction={async () => {
